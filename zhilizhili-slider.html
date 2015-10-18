@@ -1,0 +1,249 @@
+<!--
+@license
+Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+
+<link rel="import" href="bower_components/polymer/polymer.html">
+
+<dom-module id="zhilizhili-slider">
+    <template>
+        <style>
+            :host {
+                position: relative;
+                display: block;
+                overflow: hidden;
+            }
+
+            :host .zhilizhili-slider-wrapper {
+                position: absolute;
+                left: 0;
+                top: 0;
+                height: 100%;
+            }
+
+            :host .zhilizhili-slider-wrapper.animate {
+                transition: all 0.7s ease;
+            }
+
+            :host ::content slider-item.show {
+                display: block !important;
+            }
+
+            :host[direction="horizontal"] ::content slider-item {
+                display: none;
+                float: left;
+                height: 100%;
+            }
+
+            :host[direction="vertical"] ::content slider-item {
+                display: none;
+                height: 100%;
+            }
+
+            :host[direction="vertical"] ::content slider-item {
+                display: none;
+                float: left;
+                height: 100%;
+            }
+        </style>
+        <div class="zhilizhili-slider-wrapper">
+            <content></content>
+        </div>
+    </template>
+    <script>
+        (function() {
+            'use strict';
+
+            var className = 'zhilizhili-slider';
+
+            function addStylesheetRules (rules) {
+                var styleEl = document.createElement('style'),
+                        styleSheet;
+
+                // Append style element to head
+                document.head.appendChild(styleEl);
+
+                // Grab style sheet
+                styleSheet = styleEl.sheet;
+                for (var key in rules) {
+                    var j = 1, rule = rules[key], selector = key, propStr = '';
+                    for (var propkey in rule) {
+                        var prop = rule[propkey];
+                        propStr += propkey + ':' + prop + ';\n';
+                    }
+
+                    // Insert CSS Rule
+                    styleSheet.insertRule(selector + '{' + propStr + '}', styleSheet.cssRules.length);
+                }
+            }
+
+            var pfx = ["webkit", "moz", "MS", "o", ""];
+            function addPrefixedEvent(element, type, callback) {
+                for (var p = 0; p < pfx.length; p++) {
+                    if (!pfx[p]) type = type.toLowerCase();
+                    element.addEventListener(pfx[p]+type, callback, false);
+                }
+            }
+
+            function removePrefixedEvent(element, type, callback) {
+                for (var p = 0; p < pfx.length; p++) {
+                    if (!pfx[p]) type = type.toLowerCase();
+                    element.removeEventListener(pfx[p]+type, callback);
+                }
+            }
+
+            Polymer({
+                is: 'zhilizhili-slider',
+
+                properties: {
+                    currentIndex: {
+                        type: Number,
+                        value: 0,
+                        notify: true
+                    }
+                },
+
+                ready: function() {
+                    var self = this;
+                    self.wrapper = self.querySelector('.zhilizhili-slider-wrapper');
+                    self.initilazeLfxSliderArr = Polymer.dom(self).querySelectorAll('slider-item');
+
+                    self.async(function () {
+
+                        self.updateStyle();
+                        self.updateLfxSlider();
+                        self.show(self.getCurrentIndex());
+
+                    }, 1);
+                },
+
+                getCurrentIndex: function() {
+                    var self = this;
+                    return self.currentIndex;
+                },
+
+                updateStyle: function() {
+                    var self = this;
+                    if (self.getAttribute('direction') == 'horizontal') {
+                        addStylesheetRules({
+                            'zhilizhili-slider .zhilizhili-slider-wrapper': {
+                                'width': (self.offsetWidth * 2) + 'px'
+                            }
+                        });
+                    } else {
+                        addStylesheetRules({
+                            'zhilizhili-slider .zhilizhili-slider-wrapper': {
+                                'height': (self.offsetHeight * 2) + 'px'
+                            }
+                        });
+                    }
+                },
+
+                updateLfxSlider: function() {
+                    var self = this;
+                    if (self.getAttribute('direction') == 'horizontal') {
+                        addStylesheetRules({
+                            'zhilizhili-slider slider-item': {
+                                'width': (self.offsetWidth) + 'px'
+                            }
+                        });
+                    } else {
+                        addStylesheetRules({
+                            'zhilizhili-slider slider-item': {
+                                'height': (self.offsetHeight) + 'px'
+                            }
+                        });
+                    }
+                },
+
+                prev: function(index, current) {
+                    var self = this;
+                    if (self.getAttribute('direction') == 'horizontal') {
+                        self.translate(-self.offsetWidth);
+                    } else {
+                        self.translate(-self.offsetHeight);
+                    }
+                    setTimeout(function(){
+                        self.animate(0);
+                    }, 0);
+                    addPrefixedEvent(self.wrapper,  'TransitionEnd', function hanlder(e) {
+                        self.hide(current);
+                        self.clearAnimate();
+                        removePrefixedEvent(self.wrapper, 'TransitionEnd', hanlder);
+                    });
+                },
+
+                next: function(index, current) {
+                    var self = this;
+                    setTimeout(function(){
+                        if (self.getAttribute('direction') == 'horizontal') {
+                            self.animate(-self.offsetWidth);
+                        } else {
+                            self.animate(-self.offsetHeight);
+                        }
+                    }, 0);
+                    addPrefixedEvent(self.wrapper,  'TransitionEnd', function hanlder(e) {
+                        self.hide(current);
+                        self.clearAnimate();
+                        removePrefixedEvent(self.wrapper, 'TransitionEnd', hanlder);
+                    });
+                },
+
+                animate: function(distance) {
+                    var self = this;
+                    self.wrapper.classList.add('animate');
+                    self.translate(distance);
+                },
+
+                clearAnimate: function() {
+                    var self = this;
+                    self.wrapper.classList.remove('animate');
+                    self.clearTranslate();
+                },
+
+                show: function(index) {
+                    var self = this;
+                    self.initilazeLfxSliderArr[index].classList.add('show');
+                },
+
+                hide: function(index) {
+                    var self = this;
+                    self.initilazeLfxSliderArr[index].classList.remove('show');
+                },
+
+                translate: function(x) {
+                    var self = this;
+                    if (self.getAttribute('direction') == 'horizontal') {
+                        self.transform('translateX(' + x + 'px)', self.wrapper);
+                    } else {
+                        self.transform('translateY(' + x + 'px', self.wrapper);
+                    }
+                },
+
+                clearTranslate: function() {
+                    var self = this;
+                    self.translate(0);
+                    self.wrapper.removeAttribute('style');
+                },
+
+                go: function(index) {
+                    var self = this;
+                    var cur = self.currentIndex;
+                    self.show(cur);
+                    self.show(index);
+                    if (cur - index > 0) {
+                        self.prev(index, cur);
+                    } else {
+                        self.next(index, cur);
+                    }
+                    self.currentIndex = index;
+                }
+            });
+        })();
+    </script>
+</dom-module>

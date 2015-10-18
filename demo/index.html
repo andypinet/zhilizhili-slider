@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Document</title>
+    <script src="../bower_components/webcomponentsjs/webcomponents-lite.js"></script>
+    <link rel="import" href="../bower_components/polymer/polymer.html">
+    <link rel="import" href="../slider-item.html">
+    <link rel="import" href="../zhilizhili-slider.html">
+    <style is="custom-style">
+        body {
+            margin: 0;
+        }
+        
+        zhilizhili-slider {
+            width: 650px;
+            height: 450px;
+        }
+
+        .btn {
+            float: left;
+            width: 45px;
+            height: 20px;
+            background-color: #0091ea;
+            color: #ffffff;
+            text-align: center;
+            margin-left: 10px;
+        }
+    </style>
+</head>
+<body>
+    <zhilizhili-slider id="slider" direction="horizontal">
+        <slider-item>
+            <img src="http://dummyimage.com/650x450/00cfba/dcffcc&text=slider 1" alt=""/>
+        </slider-item>
+        <slider-item>
+            <img src="http://dummyimage.com/650x450/00cfba/dcffcc&text=slider 2" alt=""/>
+        </slider-item>
+        <slider-item>
+            <img src="http://dummyimage.com/650x450/00cfba/dcffcc&text=slider 3" alt=""/>
+        </slider-item>
+        <slider-item>
+            <img src="http://dummyimage.com/650x450/00cfba/dcffcc&text=slider 4" alt=""/>
+        </slider-item>
+        <slider-item>
+            <img src="http://dummyimage.com/650x450/00cfba/dcffcc&text=slider 5" alt=""/>
+        </slider-item>
+    </zhilizhili-slider>
+    <div class="btn-group" id="control">
+        <div class="btn">1</div>
+        <div class="btn">2</div>
+        <div class="btn">3</div>
+        <div class="btn">4</div>
+        <div class="btn">5</div>
+    </div>
+</body>
+<script>
+    window.onload = function() {
+        var zhilizhiliSlider = document.querySelector('#slider');
+        var control = document.querySelector('#control');
+        Array.prototype.slice.call(control.children).forEach(function (button, index) {
+            button.addEventListener('click', function (e) {
+                zhilizhiliSlider.go(index);
+            });
+        });
+    }
+</script>
+</html>
